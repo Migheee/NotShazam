@@ -1,8 +1,15 @@
+'''
+Author: Michele Castenedoli
+Date: 04/03/2025
+Generates the spectrogram of a song
+'''
+
 import os
 import librosa
 import librosa.display 
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 FRAME_SIZE = 2048
 HOP_SIZE = 512
