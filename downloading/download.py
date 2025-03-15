@@ -11,7 +11,7 @@ def download_audio(song_name, artist_name):
         'format': 'bestaudio/best',  # Best audio quality
         'outtmpl': f'songs/{song_name}.%(ext)s',  # Output path (save with proper extension)
         'noplaylist': True,  # Don't download playlists
-        'quiet': False,  # Show download process
+        'quiet': True,  # Show download process
     }
     
     # Download the audio

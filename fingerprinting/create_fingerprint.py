@@ -12,8 +12,8 @@ ENABLE_LOG = False
 FRAME_SIZE = 2048
 HOP_SIZE = 512
 NEIGHBORHOOD_SIZE = 20
-TIME_INTERVAL = 50
-FREQUENCY_INTERVAL = 22
+TIME_INTERVAL = 32
+FREQUENCY_INTERVAL = 12
 
 def log_time(func):
     '''
@@ -54,14 +54,14 @@ def get_spectrogram(file_path):
 
 
 @log_time
-def plot_spectogram(spectogram, sr):
+def plot_spectrogram(s, sr):
     '''
     This function plots the spectrogram of a song
-    :param spectogram: the spectrogram of the song
+    :param spectrogram: the spectrogram of the song
     :param sr: the sampling rate of the song
     '''
     plt.figure(figsize=(12, 8))
-    librosa.display.specshow(spectogram, sr=sr, x_axis='time', y_axis='log')
+    librosa.display.specshow(spectrogram, sr=sr, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
     plt.title('Spectrogram')
     plt.show()
@@ -84,7 +84,7 @@ def get_peaks(spectrogram):
 
 
 @log_time
-def get_anchor_point(peaks, min_intensity=20):
+def get_anchor_point(spectrogram, peaks, min_intensity=20):
     '''
     This function finds the anchor points in the spectrogram
     :param peaks: the coordinates of the peaks
@@ -108,15 +108,20 @@ def get_anchor_point(peaks, min_intensity=20):
 @log_time
 def get_fingerprint(anchor_points):
     '''
-    This function generates the fingerprint of a song
+    This function generates the fingerprint of a song using combined frequency and time hash
     :param anchor_points: the anchor points
-    :return: the fingerprint of the song
+    :return: the fingerprint of the song as a list of 32-bit hashes
     '''
     fingerprint = []
     for (f1, t1), (f2, t2) in anchor_points:
-        time_diff = t2 - t1
-        frequency_diff = f2 - f1
-        fingerprint.append((time_diff, frequency_diff))
-
+        # Calculate the time and frequency differences
+        time_diff = int(t2 - t1)  # Convert numpy int64 to regular int
+        frequency_diff = int(f2 - f1)  # Convert numpy int64 to regular int
+        
+        # Combine frequency and time differences into a single 32-bit hash
+        combined_hash = (frequency_diff << 16) | (time_diff & 0xFFFF)
+        
+        # Append the hash to the fingerprint
+        fingerprint.append(combined_hash)
+    
     return fingerprint
-
