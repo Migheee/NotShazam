@@ -12,8 +12,8 @@ ENABLE_LOG = True
 FRAME_SIZE = 2048
 HOP_SIZE = 512
 NEIGHBORHOOD_SIZE = 20
-TIME_INTERVAL = 22
-FREQUENCY_INTERVAL = 12
+TIME_INTERVAL = 50
+FREQUENCY_INTERVAL = 22
 
 def log_time(func):
     '''
@@ -84,18 +84,25 @@ def get_peaks(spectrogram):
 
 
 @log_time
-def get_anchor_point(peaks):
+def get_anchor_point(peaks, min_intensity=20):
     '''
     This function finds the anchor points in the spectrogram
     :param peaks: the coordinates of the peaks
     :return: the anchor points
     '''
     anchor_points = []
+    
+    # Pre-filtraggio dei picchi in base all'intensità minima
+    peaks = [peak for peak in peaks if spectrogram[peak[0], peak[1]] > min_intensity]
+    
     for i in range(len(peaks)):
-        for j in range(i + 1, len(peaks)):  # From i+1 to avoid duplicates and negative time intervals
+        for j in range(i + 1, len(peaks)):  # From i+1 to avoid duplicates
+            # Limita i confronti ai picchi che sono abbastanza vicini nel tempo e nella frequenza
             if abs(peaks[i][0] - peaks[j][0]) < TIME_INTERVAL and abs(peaks[i][1] - peaks[j][1]) < FREQUENCY_INTERVAL:
                 anchor_points.append((peaks[i], peaks[j]))
+                
     return anchor_points
+
 
 
 @log_time
@@ -123,4 +130,4 @@ anchor_points = get_anchor_point(peaks)
 
 # Generate the fingerprint of the song
 fingerprint = get_fingerprint(anchor_points)
-print(fingerprint)
+
