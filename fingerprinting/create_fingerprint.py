@@ -92,12 +92,12 @@ def get_anchor_point(peaks, min_intensity=20):
     '''
     anchor_points = []
     
-    # Pre-filtraggio dei picchi in base all'intensità minima
+    # Pre-filter the peaks by intensity
     peaks = [peak for peak in peaks if spectrogram[peak[0], peak[1]] > min_intensity]
     
     for i in range(len(peaks)):
         for j in range(i + 1, len(peaks)):  # From i+1 to avoid duplicates
-            # Limita i confronti ai picchi che sono abbastanza vicini nel tempo e nella frequenza
+            # Check if the peaks are close in time and frequency
             if abs(peaks[i][0] - peaks[j][0]) < TIME_INTERVAL and abs(peaks[i][1] - peaks[j][1]) < FREQUENCY_INTERVAL:
                 anchor_points.append((peaks[i], peaks[j]))
                 
