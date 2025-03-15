@@ -17,16 +17,16 @@ FREQUENCY_INTERVAL = 22
 
 def log_time(func):
     '''
-    Decoratore per misurare il tempo di esecuzione di una funzione
-    :param func: la funzione da misurare
-    :return: la funzione con il log del tempo
+    This function is a decorator that logs the execution time of a function
+    :param func: the function to be logged
+    :return: the wrapper function
     '''
     def wrapper(*args, **kwargs):
         if ENABLE_LOG:
             start_time = time.time()
             result = func(*args, **kwargs)
             end_time = time.time()
-            print(f"Tempo di esecuzione di {func.__name__}: {(end_time - start_time) * 1000:.2f} ms")
+            print(f"Execution Time {func.__name__}: {(end_time - start_time) * 1000:.2f} ms")
         else:
             result = func(*args, **kwargs)
         return result

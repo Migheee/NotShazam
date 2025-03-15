@@ -9,14 +9,9 @@ def download_audio(song_name, artist_name):
     # Set the options for the YoutubeDL
     ydl_opts = {
         'format': 'bestaudio/best',  # Best audio quality
-        'postprocessors': [{
-            'key': 'FFmpegAudioConvertor',
-            'preferredcodec': 'wav',  # Convert to WAV
-            'preferredquality': '192',  # Quality
-        }],
-        'outtmpl': '../songs/%(id)s.%(ext)s',  # Output path
+        'outtmpl': f'songs/{song_name}.%(ext)s',  # Output path (save with proper extension)
         'noplaylist': True,  # Don't download playlists
-        'quiet': False,
+        'quiet': False,  # Show download process
     }
     
     # Download the audio
@@ -25,21 +20,25 @@ def download_audio(song_name, artist_name):
         
         # Get the URL of the downloaded video
         video_url = result['entries'][0]['url']
+        
+        # This ensures the video is downloaded in the best audio format available
         ydl.download([video_url])
     
+    # Assuming the downloaded file is in the 'songs' folder and has a .webm extension
+    downloaded_file = f"songs/{song_name}.webm"
+    
+    if os.path.exists(downloaded_file):
+        # Convert from webm to wav using pydub (which requires ffmpeg)
+        audio = AudioSegment.from_file(downloaded_file, format="webm")
+        audio.export(f"songs/{song_name}.wav", format="wav")
+        
+        # Optionally, remove the .webm file after conversion
+        os.remove(downloaded_file)
+        
     print(f"Audio downloaded and converted to WAV: {song_name} by {artist_name}")
 
-def convert_audio_to_wav(input_file):
-    # Convert the audio to WAV
-    output_file = os.path.splitext(input_file)[0] + '.wav'
-    audio = AudioSegment.from_file(input_file)
-    audio.export(output_file, format='wav')
-    print(f"Converted audio to WAV: {output_file}")
-    return output_file
-
-
-song_name = "Porcelain" 
-artist_name = "Moby"     
+song_name = "Glue" 
+artist_name = "BICEP"     
 
 # Scarica e converte la canzone in .wav
 download_audio(song_name, artist_name)
