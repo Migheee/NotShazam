@@ -16,6 +16,8 @@ from scipy.ndimage import maximum_filter
 FRAME_SIZE = 2048
 HOP_SIZE = 512
 NEIGHBORHOOD_SIZE = 20
+TIME_INTERVAL = 22
+FREQUENCY_INTERVAL = 12
 
 def get_spectrogram(file_path):
     '''
@@ -56,7 +58,6 @@ def get_peaks(spectrogram):
     :param spectrogram: the spectrogram of the song
     :return: the coordinates of the peaks
     '''
-
     # Find the local maxima in the spectrogram, using a neighborhood of a given size (20x20)
     filtered_spectrogram = maximum_filter(spectrogram, size=NEIGHBORHOOD_SIZE)
     # Find the peaks by comparing the filtered spectrogram with the original one, by element-wise comparison and creating a boolean matrix
@@ -66,8 +67,33 @@ def get_peaks(spectrogram):
     return peak_coords
 
 
+def anchor_point(peaks):
+    '''
+    This function finds the anchor points in the spectrogram
+    :param peaks: the coordinates of the peaks
+    :return: the anchor points
+    '''
+    
+    anchor_points = []
+    for i in range(len(peaks)):
+        for j in range(i+1, len(peaks)):
+            if abs(peaks[i][0] - peaks[j][0]) < TIME_INTERVAL and abs(peaks[i][1] - peaks[j][1]) < FREQUENCY_INTERVAL:
+                anchor_points.append((peaks[i], peaks[j]))
+    return anchor_points
 
+# Load the song and generate the spectrogram
 spectrogram, sr = get_spectrogram("songs\\Soulmate.wav")
+
+'''
+# Plot the spectrogram
 plot_spectogram(spectrogram, sr)
+'''
+
+# Find the peaks in the spectrogram
+peaks = get_peaks(spectrogram)
+
+# Find the anchor points
+anchor_points = anchor_point(peaks)
+
 
 
