@@ -1,32 +1,34 @@
 from pymongo import MongoClient
-import create_fingerprint  # Assicurati che questo modulo contenga le funzioni necessarie
+import create_fingerprint  
 
-# Connessione a MongoDB
+# MongoDB connection
 client = MongoClient("mongodb://localhost:27017/")
 db = client["AudioProject"]
 collection = db["songs"]
 
 def add_song_to_database(name, artist, album, fingerprint):
     '''
-    Questa funzione inserisce una canzone e il suo fingerprint nel database MongoDB.
+    This function adds a song to the database
+    :param name: the name of the song
+    :param artist: the artist of the song
+    :param album: the album of the song
+    :param fingerprint: the fingerprint of the song
     '''
     song_data = {
         "name": name,
         "artist": artist,
         "album": album,
-        "fingerprint": fingerprint  # Lista di hash
-    }
+        "fingerprint": fingerprint  # Hash Lists (fingerprints) of the song
     collection.insert_one(song_data)
-    print(f"Canzone '{name}' aggiunta al database.")
 
-# Generazione fingerprint per una canzone
+# Example of usage
 spectrogram, sr = create_fingerprint.get_spectrogram("songs/Soulmate.wav")
 peaks = create_fingerprint.get_peaks(spectrogram)
 anchor_points = create_fingerprint.get_anchor_point(spectrogram, peaks)
 fingerprint = create_fingerprint.get_fingerprint(anchor_points)
 
-# Salvataggio nel database
+# Storing the song in the database
 add_song_to_database("Soulmate", "Mac Miller", "The Divine Feminine", fingerprint)
 
-# Chiudi la connessione
+# Close the MongoDB connection
 client.close()
