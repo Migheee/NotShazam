@@ -7,7 +7,7 @@ from scipy.ndimage import maximum_filter
 import time  # Importiamo il modulo per misurare il tempo
 
 # Variabile globale per abilitare o disabilitare i log dei tempi di esecuzione
-ENABLE_LOG = True
+ENABLE_LOG = False
 
 FRAME_SIZE = 2048
 HOP_SIZE = 512
@@ -119,15 +119,4 @@ def get_fingerprint(anchor_points):
         fingerprint.append((time_diff, frequency_diff))
 
     return fingerprint
-
-
-# Load the song and generate the spectrogram
-spectrogram, sr = get_spectrogram("songs\\Soulmate.wav")
-# Find the peaks in the spectrogram
-peaks = get_peaks(spectrogram)
-# Find the anchor points
-anchor_points = get_anchor_point(peaks)
-
-# Generate the fingerprint of the song
-fingerprint = get_fingerprint(anchor_points)
 
