@@ -4,9 +4,9 @@ import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import maximum_filter
-import time  # Importiamo il modulo per misurare il tempo
+import time  # For measuring the execution time
 
-# Variabile globale per abilitare o disabilitare i log dei tempi di esecuzione
+# Set the log flag to True to enable the logging of the execution time
 ENABLE_LOG = False
 
 FRAME_SIZE = 2048
