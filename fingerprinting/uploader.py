@@ -1,56 +1,32 @@
-import mysql.connector
-import create_fingerprint  # Ensure this imports the necessary functions
-import json
+from pymongo import MongoClient
+import create_fingerprint  # Assicurati che questo modulo contenga le funzioni necessarie
 
-# Connect to the MySQL database
-conn = mysql.connector.connect(
-    host='localhost',
-    user='root',  
-    password='',  
-    database='audioproject'
-)
-
-cursor = conn.cursor()
+# Connessione a MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["AudioProject"]
+collection = db["songs"]
 
 def add_song_to_database(name, artist, album, fingerprint):
     '''
-    This function inserts a song and its fingerprint into the database.
-    :param name: Name of the song
-    :param artist: Artist of the song
-    :param album: Album of the song
-    :param fingerprint: Fingerprint data of the song (list or other serializable format)
+    Questa funzione inserisce una canzone e il suo fingerprint nel database MongoDB.
     '''
-    # Serialize the fingerprint as a JSON string
-    fingerprint_json = json.dumps(fingerprint)
+    song_data = {
+        "name": name,
+        "artist": artist,
+        "album": album,
+        "fingerprint": fingerprint  # Lista di hash
+    }
+    collection.insert_one(song_data)
+    print(f"Canzone '{name}' aggiunta al database.")
 
-    # Insert song information into the table
-    cursor.execute('''
-    INSERT INTO songs (name, artist, album, fingerprint)
-    VALUES (%s, %s, %s, %s)
-    ''', (name, artist, album, fingerprint_json))
-
-    # Commit the changes to the database
-    conn.commit()
-
-
-# Function to close the cursor and the connection to the database
-def close_database_connection():
-    '''
-    This function closes the cursor and the connection to the database.
-    '''
-    cursor.close()
-    conn.close()
-
-
-# Load the song and generate the spectrogram
-spectrogram, sr = create_fingerprint.get_spectrogram("songs\\Soulmate.wav")
-# Find the peaks in the spectrogram
+# Generazione fingerprint per una canzone
+spectrogram, sr = create_fingerprint.get_spectrogram("songs/Soulmate.wav")
 peaks = create_fingerprint.get_peaks(spectrogram)
-# Find the anchor points
-anchor_points = create_fingerprint.get_anchor_point(spectrogram,peaks)
-
-# Generate the fingerprint of the song
+anchor_points = create_fingerprint.get_anchor_point(spectrogram, peaks)
 fingerprint = create_fingerprint.get_fingerprint(anchor_points)
 
-# Add the song and its fingerprint to the database
+# Salvataggio nel database
 add_song_to_database("Soulmate", "Mac Miller", "The Divine Feminine", fingerprint)
+
+# Chiudi la connessione
+client.close()
