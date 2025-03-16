@@ -84,44 +84,72 @@ def get_peaks(spectrogram):
 
 
 @log_time
-def get_anchor_point(spectrogram, peaks, min_intensity=20):
+def filter_peaks_by_intensity(spectrogram, peaks, percentile=85):
+    '''
+    Filters peaks based on intensity threshold (percentile-based).
+    :param spectrogram: Spectrogram of the song
+    :param peaks: Peak coordinates
+    :param percentile: Intensity percentile threshold
+    :return: Filtered peak coordinates
+    '''
+    intensities = [spectrogram[p[0], p[1]] for p in peaks]
+    threshold = np.percentile(intensities, percentile)
+    return [p for p in peaks if spectrogram[p[0], p[1]] >= threshold]
+
+
+
+@log_time
+def get_anchor_points(peaks, spectrogram, window_size=32):
     '''
     This function finds the anchor points in the spectrogram
     :param peaks: the coordinates of the peaks
+    :param spectrogram: the spectrogram of the song
+    :param window_size: the size of the window
     :return: the anchor points
     '''
     anchor_points = []
-    
-    # Pre-filter the peaks by intensity
-    peaks = [peak for peak in peaks if spectrogram[peak[0], peak[1]] > min_intensity]
-    
-    for i in range(len(peaks)):
-        for j in range(i + 1, len(peaks)):  # From i+1 to avoid duplicates
-            # Check if the peaks are close in time and frequency
-            if abs(peaks[i][0] - peaks[j][0]) < TIME_INTERVAL and abs(peaks[i][1] - peaks[j][1]) < FREQUENCY_INTERVAL:
-                anchor_points.append((peaks[i], peaks[j]))
-                
+    sorted_peaks = sorted(peaks, key=lambda x: x[1])  # Order by time
+
+    for i in range(0, len(sorted_peaks), window_size):
+        window_peaks = sorted_peaks[i:i+window_size] # Get the peaks in the window
+        if window_peaks:
+            best_peak = max(window_peaks, key=lambda p: spectrogram[p[0], p[1]]) # Get the peak with the highest intensity
+            anchor_points.append(best_peak)
+
     return anchor_points
 
 
 
 @log_time
-def get_fingerprint(anchor_points):
-    '''
-    This function generates the fingerprint of a song using combined frequency and time hash
-    :param anchor_points: the anchor points
-    :return: the fingerprint of the song as a list of 32-bit hashes
-    '''
+def generate_fingerprint(anchor_points):
+    """
+    Generates a fingerprint for the audio file.
+    :param anchor_points: List of selected anchor points.
+    :return: List of 32-bit hashes representing the fingerprint.
+    """
     fingerprint = []
-    for (f1, t1), (f2, t2) in anchor_points:
-        # Calculate the time and frequency differences
-        time_diff = int(t2 - t1)  # Convert numpy int64 to regular int
-        frequency_diff = int(f2 - f1)  # Convert numpy int64 to regular int
-        
-        # Combine frequency and time differences into a single 32-bit hash
-        combined_hash = (frequency_diff << 16) | (time_diff & 0xFFFF)
-        
-        # Append the hash to the fingerprint
-        fingerprint.append(combined_hash)
-    
+    for i in range(len(anchor_points)):
+        for j in range(i + 1, len(anchor_points)):  # Avoid duplicate pairs
+            f1, t1 = anchor_points[i]
+            f2, t2 = anchor_points[j]
+
+            # Compute time and frequency differences
+            time_diff = int(t2 - t1)
+            frequency_diff = int(f2 - f1)
+
+            # Generate a robust hash
+            combined_hash = hash_fingerprint(f1, t1, f2, t2)
+            fingerprint.append(combined_hash)
+
     return fingerprint
+    
+
+@log_time
+def hash_fingerprint(f1, t1, f2, t2):
+    """
+    Generates a robust hash for the fingerprint.
+    :param f1, t1, f2, t2: Frequency and time values of anchor points.
+    :return: SHA-1 hash of the fingerprint.
+    """
+    data = f"{f1}-{t1}-{f2}-{t2}".encode()
+    return hashlib.sha1(data).hexdigest()[:10]  # Take only the first 10 characters

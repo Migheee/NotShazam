@@ -35,10 +35,10 @@ def download_audio(song_name, artist_name):
         # Optionally, remove the .webm file after conversion
         os.remove(downloaded_file)
         
-    print(f"Audio downloaded and converted to WAV: {song_name} by {artist_name}")
 
+# Example of usage
 song_name = "Glue" 
 artist_name = "BICEP"     
 
-# Scarica e converte la canzone in .wav
+# Download the audio from YouTube and save it as a .wav file
 download_audio(song_name, artist_name)
