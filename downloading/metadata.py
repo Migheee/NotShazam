@@ -70,3 +70,45 @@ def get_song_metadata(song_id, token):
     album_name = song_metadata["album"]["name"]  
     return song_name, artist_name, album_name  
 
+
+def get_songs_from_playlist(playlist_id, token):
+    '''
+    This function retrieves the songs from a playlist
+    :param playlist_id: the id of the playlist
+    :param token: the token
+    :return: the list of songs
+    '''
+
+    # Construct the URL for the Spotify API request
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"  
+    headers = get_auth_headers(token)  
+
+    # Make the GET request to the Spotify API
+    result = get(url, headers=headers)  
+
+    # Parse the JSON response to get the songs
+    playlist_metadata = result.json()  
+
+    # Extract the list of songs from the metadata
+    songs = playlist_metadata["items"]  
+    for song in songs:
+        try:
+            song_name = song["track"]["name"]
+            artist_name = song["track"]["artists"][0]["name"]  
+            print(f"Song: {song_name}")
+            print(f"Artist: {artist_name}")
+        except:
+            print("Error")
+
+    return songs
+
+token = get_token()
+song_id="5JgTIfS7FfSE9tuebzX8HC"
+song_name, artist_name, album_name = get_song_metadata(song_id, token)
+print(f"Song: {song_name}")
+print(f"Artist: {artist_name}")
+print(f"Album: {album_name}")
+
+playlist_id="3b3AgBdPfyDvq1xi26vdYh"
+token = get_token()
+songs = get_songs_from_playlist(playlist_id, token)

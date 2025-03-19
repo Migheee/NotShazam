@@ -1,0 +1,83 @@
+import os
+import secrets
+import string
+import hashlib
+import base64
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CLIENT_ID = os.getenv("CLIENT_ID")
+SCOPE = 'user-read-private user-read-email'
+
+
+def generate_random_string(length=128):
+    '''
+    Generate a random string of the given length
+    :param length: The length of the random string
+    :return: The random string
+    '''
+    characters = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(characters) for _ in range(length))
+
+
+def hash_string(string):
+    '''
+    Hash a string using SHA-256, and encode the hash in base64
+    :param string: The string to hash
+    :return: The hash of the string encoded in base64
+    '''
+    hash_bytes = hashlib.sha256(string.encode('utf-8')).digest()  # SHA-256 hash
+    return base64.urlsafe_b64encode(hash_bytes).decode('utf-8').rstrip('=')  # Base64 encoding
+
+
+def request_user_authorization(code_challenge, code_challenge_method='S256'):
+    '''
+    Request user authorization
+    :return: Response object from Spotify authorization endpoint
+    '''
+    url = 'https://accounts.spotify.com/authorize' #URL to request user authorization
+
+    # Parameters for the request
+    params = {   
+        "response_type": "code",
+        "client_id": CLIENT_ID,
+        "scope": SCOPE,
+        "code_challenge_method": code_challenge_method,
+        "code_challenge": code_challenge,
+        "redirect_uri": "http://localhost:8888/callback"  #To be changed when app web server is set up
+    }
+    # Make the request
+    response = requests.get(url, params=params)
+    return response
+
+
+def get_token(code_verifier, code):
+    url = "https://accounts.spotify.com/api/token"
+
+    headers={
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    body={
+        'client_id': CLIENT_ID,
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': 'http://localhost:8888/callback', #To be changed when app web server is set up
+        'code_verifier': code_verifier
+    }
+
+    response = requests.post(url, data=body, headers=headers)
+    
+    return response.json()['access_token']
+    
+# Example usage
+code_verifier = generate_random_string(64)
+code_challenge = hash_string(code_verifier)
+response = request_user_authorization(code_challenge)
+
+print("Authorization URL:", response.url) # Print the authorization URL
+code = input("Enter the code: ") # Get the code from the user
+token = get_token(code_verifier, code) # Get the token
+print("Token:", token) # Print the token
+
