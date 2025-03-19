@@ -70,14 +70,15 @@ def get_token(code_verifier, code):
     response = requests.post(url, data=body, headers=headers)
     
     return response.json()['access_token']
-    
+
 # Example usage
 code_verifier = generate_random_string(64)
 code_challenge = hash_string(code_verifier)
 response = request_user_authorization(code_challenge)
 
-print("Authorization URL:", response.url) # Print the authorization URL
-code = input("Enter the code: ") # Get the code from the user
-token = get_token(code_verifier, code) # Get the token
-print("Token:", token) # Print the token
+print("Authorization URL:", response.url)  # Print the authorization URL
+code = input("Enter the code: ")  # Get the code from the user
+token = get_token(code_verifier, code)  # Get the token
+print("Token:", token)  # Print the token
+
 

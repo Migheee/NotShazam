@@ -1,45 +1,12 @@
-from dotenv import load_dotenv
-import os
-import base64
 from requests import get, post
 import json
-
-load_dotenv()
-
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-
-def get_token():
-    '''
-    This function retrieves the token for the Spotify API
-    :return: the token
-    '''
-
-    # Encode the client_id and client_secret
-    auth = f"{client_id}:{client_secret}"
-    message_bytes = auth.encode('utf-8')
-    auth_base64 = str(base64.b64encode(message_bytes), 'utf-8')
-
-    # Get the token
-    url = "https://accounts.spotify.com/api/token"
-    headers = {
-        "Authorization": f"Basic {auth_base64}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    data = {
-        "grant_type": "client_credentials"
-    }
-    result = post(url, headers=headers, data=data)
-    json_result = json.loads(result.content)
-    token = json_result["access_token"]
-    return token
 
 
 def get_auth_headers(token):
     '''
-    This function returns the headers for the Spotify API
+    This function returns the authorization headers
     :param token: the token
-    :return: the headers
+    :return: the authorization headers
     '''
     return {
         "Authorization": f"Bearer {token}"
@@ -102,7 +69,7 @@ def get_songs_from_playlist(playlist_id, token):
 
     return songs
 
-token = get_token()
+# Example usage. Use auth.py to get the token
 song_id="5JgTIfS7FfSE9tuebzX8HC"
 song_name, artist_name, album_name = get_song_metadata(song_id, token)
 print(f"Song: {song_name}")
@@ -110,5 +77,4 @@ print(f"Artist: {artist_name}")
 print(f"Album: {album_name}")
 
 playlist_id="3b3AgBdPfyDvq1xi26vdYh"
-token = get_token()
 songs = get_songs_from_playlist(playlist_id, token)
