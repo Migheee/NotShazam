@@ -2,3 +2,4 @@ __pycache__/
 *.wav
 AudioVenv
 .env
+flask_session

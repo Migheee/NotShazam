@@ -46,11 +46,11 @@ def request_user_authorization(code_challenge, code_challenge_method='S256'):
         "scope": SCOPE,
         "code_challenge_method": code_challenge_method,
         "code_challenge": code_challenge,
-        "redirect_uri": "http://localhost:8888/callback"  #To be changed when app web server is set up
+        "redirect_uri": "http://localhost:5000/callback"  #To be changed when app web server is set up
     }
     # Make the request
     response = requests.get(url, params=params)
-    return response
+    return f"{url}?{requests.compat.urlencode(params)}"
 
 
 def get_token(code_verifier, code):
@@ -63,7 +63,7 @@ def get_token(code_verifier, code):
         'client_id': CLIENT_ID,
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': 'http://localhost:8888/callback', #To be changed when app web server is set up
+        'redirect_uri': 'http://localhost:5000/callback', #To be changed when app web server is set up
         'code_verifier': code_verifier
     }
 
@@ -71,14 +71,21 @@ def get_token(code_verifier, code):
     
     return response.json()['access_token']
 
-# Example usage
-code_verifier = generate_random_string(64)
-code_challenge = hash_string(code_verifier)
-response = request_user_authorization(code_challenge)
 
-print("Authorization URL:", response.url)  # Print the authorization URL
-code = input("Enter the code: ")  # Get the code from the user
-token = get_token(code_verifier, code)  # Get the token
-print("Token:", token)  # Print the token
+def refresh_token(refresh_token):
+    url = "https://accounts.spotify.com/api/token"
+
+    headers={
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    body={
+        'client_id': CLIENT_ID,
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token
+    }
+
+    response = requests.post(url, data=body, headers=headers)
+    
+    return response.json()['refresh_token']
 
 
