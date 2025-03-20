@@ -65,7 +65,7 @@ def plot_spectrogram(s, sr):
     plt.figure(figsize=(12, 8))
     librosa.display.specshow(spectrogram, sr=sr, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
-    plt.title('Spectrogram')
+    plt.title('òSpectrogram')
     plt.show()
 
 
@@ -129,5 +129,13 @@ def get_fingerprint(anchor_points):
     return fingerprint_hashes
 
 
+#Example usage
+file_path = "songs/Glue.wav"
+spectrogram, sr = get_spectrogram(file_path)
+plot_spectrogram(spectrogram, sr)
+peaks = get_peaks(spectrogram)
+anchor_points = get_anchor_points(spectrogram, peaks)
+fingerprint_hashes = get_fingerprint(anchor_points)
+print(fingerprint_hashes)
 
 
