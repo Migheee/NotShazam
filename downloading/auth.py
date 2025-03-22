@@ -4,6 +4,7 @@ import string
 import hashlib
 import base64
 import requests
+import pymongo
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,6 +12,9 @@ load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
 SCOPE = 'user-read-private user-read-email'
 
+client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = client["AudioProject"] 
+collection = db["sessions"]
 
 def generate_random_string(length=128):
     '''
@@ -46,7 +50,7 @@ def request_user_authorization(code_challenge, code_challenge_method='S256'):
         "scope": SCOPE,
         "code_challenge_method": code_challenge_method,
         "code_challenge": code_challenge,
-        "redirect_uri": "http://localhost:5000/callback"  #To be changed when app web server is set up
+        "redirect_uri": "https://2409-87-9-253-218.ngrok-free.app/callback"  #To be changed when app web server is set up
     }
     # Make the request
     response = requests.get(url, params=params)
@@ -63,12 +67,12 @@ def get_token(code_verifier, code):
         'client_id': CLIENT_ID,
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': 'http://localhost:5000/callback', #To be changed when app web server is set up
+        'redirect_uri': "https://2409-87-9-253-218.ngrok-free.app/callback", #To be changed when app web server is set up
         'code_verifier': code_verifier
     }
 
     response = requests.post(url, data=body, headers=headers)
-    
+    print(response.json())
     return response.json()['access_token']
 
 
