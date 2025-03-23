@@ -7,6 +7,7 @@ from downloading.auth import generate_random_string, hash_string, request_user_a
 
 # Configurazione MongoDB per la sessione
 mongo_client = MongoClient('mongodb://localhost:27017/')
+
 db = mongo_client.AudioProject
 
 # Crea l'app Flask
