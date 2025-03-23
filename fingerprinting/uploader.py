@@ -23,7 +23,7 @@ def add_song_to_database(name, artist, album, fingerprint):
     collection.insert_one(song_data)
 
 # Example of usage
-spectrogram, sr = create_fingerprint.get_spectrogram("songs/Soulmate.wav")
+spectrogram, sr = create_fingerprint.get_spectrogram("songs/Glue.wav")
 peaks = create_fingerprint.get_peaks(spectrogram)
 anchor_points = create_fingerprint.get_anchor_points(spectrogram, peaks)
 fingerprint = create_fingerprint.get_fingerprint(anchor_points)

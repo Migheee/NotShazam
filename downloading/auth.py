@@ -43,6 +43,7 @@ def request_user_authorization(code_challenge, code_challenge_method='S256'):
     '''
     url = 'https://accounts.spotify.com/authorize' #URL to request user authorization
 
+    print(CLIENT_ID)
     # Parameters for the request
     params = {   
         "response_type": "code",
@@ -50,7 +51,7 @@ def request_user_authorization(code_challenge, code_challenge_method='S256'):
         "scope": SCOPE,
         "code_challenge_method": code_challenge_method,
         "code_challenge": code_challenge,
-        "redirect_uri": "https://2409-87-9-253-218.ngrok-free.app/callback"  #To be changed when app web server is set up
+        "redirect_uri": "https://b144-87-9-253-218.ngrok-free.app/callback"  #To be changed when app web server is set up
     }
     # Make the request
     response = requests.get(url, params=params)
@@ -67,7 +68,7 @@ def get_token(code_verifier, code):
         'client_id': CLIENT_ID,
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': "https://2409-87-9-253-218.ngrok-free.app/callback", #To be changed when app web server is set up
+        'redirect_uri': "https://b144-87-9-253-218.ngrok-free.app/callback", #To be changed when app web server is set up
         'code_verifier': code_verifier
     }
 
