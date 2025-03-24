@@ -6,10 +6,11 @@ import numpy as np
 import hashlib
 import matplotlib.pyplot as plt
 from scipy.ndimage import maximum_filter
+from scipy.spatial import KDTree
 import time  # For measuring the execution time
 
 # Set the log flag to True to enable the logging of the execution time
-ENABLE_LOG = False
+ENABLE_LOG = True
 
 FRAME_SIZE = 2048
 HOP_SIZE = 512
@@ -42,18 +43,9 @@ def get_spectrogram(file_path):
     :param file_path: path to the song
     :return: the spectrogram and the sampling rate of the song
     '''
-    # Load song
     song, sr = librosa.load(file_path)
-
-    # Execute the STFT
-    S = librosa.stft(song, n_fft=FRAME_SIZE, hop_length=HOP_SIZE)
-
-    # DB conversion of the amplitude (since the human ear perceives the loudness of a sound on a logarithmic scale)
-    Y_scale = np.abs(S) ** 2  # Squared magnitude of the STFT (to get the power spectrogram)
-    Y_log = librosa.power_to_db(Y_scale)
-
-    return Y_log, sr
-
+    S = np.abs(librosa.stft(song, n_fft=FRAME_SIZE, hop_length=HOP_SIZE)) ** 2
+    return librosa.power_to_db(S)
 
 @log_time
 def plot_spectrogram(s, sr):
@@ -77,6 +69,7 @@ def get_peaks(spectrogram):
     :return: the coordinates of the peaks
     '''
     # Find the local maxima in the spectrogram, using a neighborhood of a given size (20x20)
+    print(type(spectrogram))
     filtered_spectrogram = maximum_filter(spectrogram, size=NEIGHBORHOOD_SIZE)
     # Find the peaks by comparing the filtered spectrogram with the original one, by element-wise comparison and creating a boolean matrix
     peaks = (spectrogram == filtered_spectrogram)
@@ -87,24 +80,27 @@ def get_peaks(spectrogram):
 
 @log_time
 def get_anchor_points(spectrogram, peaks, min_intensity=20):
-    '''
-    This function finds the anchor points in the spectrogram
-    :param peaks: the coordinates of the peaks
-    :return: the anchor points
-    '''
-    anchor_points = []
+    # Filtro picchi per intensità minima
+    peaks = np.array([p for p in peaks if spectrogram[p[0], p[1]] > min_intensity])
     
-    # Pre-filter the peaks by intensity
-    peaks = [peak for peak in peaks if spectrogram[peak[0], peak[1]] > min_intensity]
-    
-    for i in range(len(peaks)):
-        for j in range(i + 1, len(peaks)):  # From i+1 to avoid duplicates
-            # Check if the peaks are close in time and frequency
-            if abs(peaks[i][0] - peaks[j][0]) < TIME_INTERVAL and abs(peaks[i][1] - peaks[j][1]) < FREQUENCY_INTERVAL:
-                anchor_points.append((peaks[i], peaks[j]))
-                
-    return anchor_points
+    if len(peaks) == 0:
+        return []
 
+    # Creazione del KDTree
+    tree = KDTree(peaks)
+
+    anchor_points = []
+    for peak in peaks:
+        # Trova i vicini nel range specificato
+        indices = tree.query_ball_point(peak, r=max(TIME_INTERVAL, FREQUENCY_INTERVAL))
+        
+        for idx in indices:
+            neighbor = peaks[idx]
+            # Controlla che il vicino rispetti i vincoli di distanza
+            if 0 < abs(peak[0] - neighbor[0]) < TIME_INTERVAL and 0 < abs(peak[1] - neighbor[1]) < FREQUENCY_INTERVAL:
+                anchor_points.append((tuple(peak), tuple(neighbor)))
+
+    return anchor_points
 
 
 @log_time
@@ -128,14 +124,20 @@ def get_fingerprint(anchor_points):
 
     return fingerprint_hashes
 
+@log_time
+def process_audio(file_path):
+    spectrogram = get_spectrogram(file_path)
 
-#Example usage
-file_path = "songs/Glue.wav"
-spectrogram, sr = get_spectrogram(file_path)
-plot_spectrogram(spectrogram, sr)
-peaks = get_peaks(spectrogram)
-anchor_points = get_anchor_points(spectrogram, peaks)
-fingerprint_hashes = get_fingerprint(anchor_points)
-print(fingerprint_hashes)
+    peaks = get_peaks(spectrogram)
+    anchor_points = get_anchor_points(spectrogram, peaks)
+    fingerprint = get_fingerprint(anchor_points)
+    print(len(fingerprint))
 
+
+
+
+# Esempio di utilizzo
+if __name__ == "__main__":
+    file_path = "songs/Glue.wav"
+    process_audio(file_path)
 

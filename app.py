@@ -69,8 +69,9 @@ def callback():
     token = get_token(code_verifier, code)
 
     session.pop('code_verifier', None)  # Pulizia sessione
+    session['access_token'] = token  # Salvataggio dell'access token
+    return redirect('/pagina.html')
 
-    return jsonify({"access_token": token})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
