@@ -9,7 +9,7 @@ from scipy.spatial import KDTree
 import time  # For measuring the execution time
 
 # Set the log flag to True to enable the logging of the execution time
-ENABLE_LOG = False
+ENABLE_LOG = True
 FRAME_SIZE = 2048
 HOP_SIZE = 512
 NEIGHBORHOOD_SIZE = 20

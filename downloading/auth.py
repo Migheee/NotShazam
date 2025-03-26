@@ -80,7 +80,7 @@ def get_token(code_verifier, code):
     }
 
     response = requests.post(url, data=body, headers=headers)
-    print(response.json())
+    
     return response.json()['access_token']
 
 
