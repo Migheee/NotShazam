@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download da Spotify</title>
+</head>
+<body>
+    <form id="downloadForm">
+        <label for="spotifyUrl">URL della canzone di Spotify:</label>
+        <input type="text" id="spotifyUrl" name="spotifyUrl" required>
+        <button type="submit">Invio</button>
+    </form>
+
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const urlInput = document.getElementById('spotifyUrl').value;
+            const match = urlInput.match(/spotify\.com\/track\/([a-zA-Z0-9]+)/);
+            
+            if (match && match[1]) {
+                const trackId = match[1];
+                
+                fetch('/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: trackId })
+                })
+                .then(response => response.json())
+                .then(data => console.log('Success:', data))
+                .catch(error => console.error('Error:', error));
+            } else {
+                alert('Inserisci un URL valido di una canzone di Spotify.');
+            }
+        });
+    </script>
+</body>
+</html>

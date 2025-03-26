@@ -1,8 +1,18 @@
+import os
 import yt_dlp
 from pydub import AudioSegment
-import os
 
 def download_audio(song_name, artist_name):
+    """
+    Download a song from YouTube, convert it to WAV format, and save it locally.
+
+    This function searches for a song on YouTube using the provided song name and artist name,
+    downloads the best quality audio, and converts it from WebM format to WAV format using pydub.
+
+    :param song_name: The name of the song to download.
+    :param artist_name: The name of the artist of the song.
+    :return: None
+    """
     # Build the search query
     search_query = f"{song_name} {artist_name} site:youtube.com"
     
@@ -34,11 +44,3 @@ def download_audio(song_name, artist_name):
         
         # Optionally, remove the .webm file after conversion
         os.remove(downloaded_file)
-        
-
-# Example of usage
-song_name = "Glue" 
-artist_name = "BICEP"     
-
-# Download the audio from YouTube and save it as a .wav file
-download_audio(song_name, artist_name)

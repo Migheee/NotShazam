@@ -69,12 +69,4 @@ def get_songs_from_playlist(playlist_id, token):
 
     return songs
 
-# Example usage. Use auth.py to get the token
-song_id="5JgTIfS7FfSE9tuebzX8HC"
-song_name, artist_name, album_name = get_song_metadata(song_id, token)
-print(f"Song: {song_name}")
-print(f"Artist: {artist_name}")
-print(f"Album: {album_name}")
 
-playlist_id="3b3AgBdPfyDvq1xi26vdYh"
-songs = get_songs_from_playlist(playlist_id, token)

@@ -1,5 +1,5 @@
-import os
 import secrets
+import os
 import string
 import hashlib
 import base64
@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CLIENT_ID = os.getenv("CLIENT_ID")
+REDIRECT_URI= os.getenv("REDIRECT_URI")
 SCOPE = 'user-read-private user-read-email'
 
 client = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -51,7 +52,7 @@ def request_user_authorization(code_challenge, code_challenge_method='S256'):
         "scope": SCOPE,
         "code_challenge_method": code_challenge_method,
         "code_challenge": code_challenge,
-        "redirect_uri": "https://c14c-87-9-253-218.ngrok-free.app/callback"  #To be changed when app web server is set up
+        "redirect_uri":  REDIRECT_URI  #To be changed when app web server is set up
     }
     # Make the request
     response = requests.get(url, params=params)
@@ -59,6 +60,12 @@ def request_user_authorization(code_challenge, code_challenge_method='S256'):
 
 
 def get_token(code_verifier, code):
+    """
+    Exchange authorization code for access token.
+    :param code_verifier: The original code verifier.
+    :param code: Authorization code received from Spotify.
+    :return: Access token.
+    """
     url = "https://accounts.spotify.com/api/token"
 
     headers={
@@ -68,7 +75,7 @@ def get_token(code_verifier, code):
         'client_id': CLIENT_ID,
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': "https://c14c-87-9-253-218.ngrok-free.app/callback", #To be changed when app web server is set up
+        'redirect_uri': REDIRECT_URI , #To be changed when app web server is set up
         'code_verifier': code_verifier
     }
 
@@ -78,6 +85,11 @@ def get_token(code_verifier, code):
 
 
 def refresh_token(refresh_token):
+    """
+    Refresh Spotify access token.
+    :param refresh_token: The refresh token obtained from Spotify.
+    :return: New access token.
+    """
     url = "https://accounts.spotify.com/api/token"
 
     headers={
@@ -92,5 +104,3 @@ def refresh_token(refresh_token):
     response = requests.post(url, data=body, headers=headers)
     
     return response.json()['refresh_token']
-
-
